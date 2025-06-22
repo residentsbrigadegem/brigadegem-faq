@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brigade Gem FAQs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 20px; }
+    details { margin-bottom: 12px; }
+    summary { font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Search FAQs – Brigade Gem</h2>
+  <input type="text" id="searchBox" placeholder="Type your question here...">
+  <div id="faqResults"><p>Start typing to search...</p></div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/PASTE_YOUR_SCRIPT_URL_HERE/exec';
+    const searchBox = document.getElementById('searchBox');
+    const faqResults = document.getElementById('faqResults');
+
+    searchBox.addEventListener('input', debounce(searchFAQs, 300));
+    searchBox.addEventListener('keydown', e => {
+      if (e.key === 'Enter') searchFAQs();
+    });
+
+    function searchFAQs() {
+      const keyword = searchBox.value.trim();
+      if (!keyword) {
+        faqResults.innerHTML = '<p>Start typing to search...</p>';
+        return;
+      }
+
+      fetch(API_URL + '?q=' + encodeURIComponent(keyword))
+        .then(response => response.json())
+        .then(data => {
+          if (!data.length) {
+            faqResults.innerHTML = '<p>No results found.</p>';
+            return;
+          }
+
+          faqResults.innerHTML = data.map(item => `
+            <details>
+              <summary>${item.question}</summary>
+              <div>${item.answer}</div>
+            </details>
+          `).join('');
+        })
+        .catch(err => {
+          console.error(err);
+          faqResults.innerHTML = '<p>Error fetching data.</p>';
+        });
+    }
+
+    function debounce(fn, delay) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+      };
+    }
+  </script>
+</body>
+</html>
